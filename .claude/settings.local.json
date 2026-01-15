@@ -1,0 +1,27 @@
+
+{
+  "permissions": {
+
+      "allow": [
+        "Bash(npm install:*)",
+      "Bash",
+      "Read",
+      "Write",
+      "Edit",
+      "MultiEdit",
+      "Glob",
+      "Grep",
+      "LS",
+      "TodoRead",
+      "TodoWrite",
+      "WebFetch",
+      "WebSearch",
+      "NotebookRead",
+      "NotebookEdit",
+      "Task",
+      "exit_plan_mode",
+      "mcp__*"
+    ],
+    "deny": []
+  }
+}

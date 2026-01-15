@@ -7,16 +7,23 @@
         "dev": "nuxt dev",
         "generate": "nuxt generate",
         "preview": "nuxt preview",
-        "postinstall": "nuxt prepare"
+        "postinstall": "nuxt prepare",
+        "db:generate": "drizzle-kit generate",
+        "db:migrate": "drizzle-kit migrate",
+        "db:push": "drizzle-kit push",
+        "db:studio": "drizzle-kit studio"
     },
     "dependencies": {
         "@tailwindcss/vite": "^4.1.18",
+        "drizzle-orm": "^0.45.1",
         "nuxt": "^4.2.2",
+        "postgres": "^3.4.8",
         "tailwindcss": "^4.1.18",
         "vue": "^3.5.26",
         "vue-router": "^4.6.4"
     },
     "devDependencies": {
+        "drizzle-kit": "^0.31.8",
         "prettier": "^3.7.4"
     }
 }
