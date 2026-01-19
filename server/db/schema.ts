@@ -8,6 +8,7 @@ import {
     timestamp,
     unique,
     boolean,
+    primaryKey,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -70,23 +71,88 @@ export const expenses = pgTable('expenses', {
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// Tabela de Tags
+export const tags = pgTable('tags', {
+    id: serial('id').primaryKey(),
+    name: varchar('name', { length: 100 }).notNull().unique(),
+    color: varchar('color', { length: 7 }).notNull().default('#6366f1'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Tabela de relacionamento Entry-Tags (muitos para muitos)
+export const entryTags = pgTable(
+    'entry_tags',
+    {
+        entryId: integer('entry_id')
+            .references(() => entries.id, { onDelete: 'cascade' })
+            .notNull(),
+        tagId: integer('tag_id')
+            .references(() => tags.id, { onDelete: 'cascade' })
+            .notNull(),
+    },
+    (table) => [primaryKey({ columns: [table.entryId, table.tagId] })]
+);
+
+// Tabela de relacionamento Expense-Tags (muitos para muitos)
+export const expenseTags = pgTable(
+    'expense_tags',
+    {
+        expenseId: integer('expense_id')
+            .references(() => expenses.id, { onDelete: 'cascade' })
+            .notNull(),
+        tagId: integer('tag_id')
+            .references(() => tags.id, { onDelete: 'cascade' })
+            .notNull(),
+    },
+    (table) => [primaryKey({ columns: [table.expenseId, table.tagId] })]
+);
+
 // Relacionamentos
 export const cashFlowsRelations = relations(cashFlows, ({ many }) => ({
     entries: many(entries),
     expenses: many(expenses),
 }));
 
-export const entriesRelations = relations(entries, ({ one }) => ({
+export const entriesRelations = relations(entries, ({ one, many }) => ({
     cashFlow: one(cashFlows, {
         fields: [entries.cashFlowId],
         references: [cashFlows.id],
     }),
+    entryTags: many(entryTags),
 }));
 
-export const expensesRelations = relations(expenses, ({ one }) => ({
+export const expensesRelations = relations(expenses, ({ one, many }) => ({
     cashFlow: one(cashFlows, {
         fields: [expenses.cashFlowId],
         references: [cashFlows.id],
+    }),
+    expenseTags: many(expenseTags),
+}));
+
+export const tagsRelations = relations(tags, ({ many }) => ({
+    entryTags: many(entryTags),
+    expenseTags: many(expenseTags),
+}));
+
+export const entryTagsRelations = relations(entryTags, ({ one }) => ({
+    entry: one(entries, {
+        fields: [entryTags.entryId],
+        references: [entries.id],
+    }),
+    tag: one(tags, {
+        fields: [entryTags.tagId],
+        references: [tags.id],
+    }),
+}));
+
+export const expenseTagsRelations = relations(expenseTags, ({ one }) => ({
+    expense: one(expenses, {
+        fields: [expenseTags.expenseId],
+        references: [expenses.id],
+    }),
+    tag: one(tags, {
+        fields: [expenseTags.tagId],
+        references: [tags.id],
     }),
 }));
 
@@ -97,3 +163,5 @@ export type Entry = typeof entries.$inferSelect;
 export type NewEntry = typeof entries.$inferInsert;
 export type Expense = typeof expenses.$inferSelect;
 export type NewExpense = typeof expenses.$inferInsert;
+export type Tag = typeof tags.$inferSelect;
+export type NewTag = typeof tags.$inferInsert;

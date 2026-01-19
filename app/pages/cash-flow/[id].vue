@@ -1,6 +1,12 @@
 <script setup lang="ts">
 const { user, logout } = useAuth();
 
+interface Tag {
+    id: number;
+    name: string;
+    color: string;
+}
+
 interface Entry {
     id: number;
     cashFlowId: number;
@@ -8,6 +14,7 @@ interface Entry {
     description: string;
     amountExpected: string;
     amountReceived: string;
+    tags: Tag[];
 }
 
 interface Expense {
@@ -16,6 +23,7 @@ interface Expense {
     date: string;
     description: string;
     amount: string;
+    tags: Tag[];
 }
 
 interface CashFlowSummary {
@@ -44,6 +52,9 @@ const {
     error,
 } = await useFetch<CashFlowDetail>(`/api/cash-flows/${id}`);
 
+// Buscar todas as tags disponíveis
+const { data: availableTags, refresh: refreshTags } = await useFetch<Tag[]>('/api/tags');
+
 const monthNames = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
@@ -65,6 +76,7 @@ function formatDate(dateStr: string): string {
 
 const showEntryModal = ref(false);
 const showExpenseModal = ref(false);
+const showTagModal = ref(false);
 const editingEntry = ref<Entry | null>(null);
 const editingExpense = ref<Expense | null>(null);
 const isSubmitting = ref(false);
@@ -75,12 +87,29 @@ const newEntry = ref({
     amountExpected: '0',
     amountReceived: '0',
 });
+const selectedEntryTagIds = ref<number[]>([]);
 
 const newExpense = ref({
     date: new Date().toISOString().split('T')[0],
     description: '',
     amount: '0',
 });
+const selectedExpenseTagIds = ref<number[]>([]);
+
+const newTagName = ref('');
+const newTagColor = ref('#6366f1');
+const isCreatingTag = ref(false);
+
+const tagColors = [
+    '#6366f1', // indigo
+    '#22c55e', // green
+    '#ef4444', // red
+    '#f59e0b', // amber
+    '#3b82f6', // blue
+    '#ec4899', // pink
+    '#8b5cf6', // violet
+    '#14b8a6', // teal
+];
 
 function openEntryModal(entry?: Entry) {
     if (entry) {
@@ -91,6 +120,7 @@ function openEntryModal(entry?: Entry) {
             amountExpected: entry.amountExpected,
             amountReceived: entry.amountReceived,
         };
+        selectedEntryTagIds.value = entry.tags.map(t => t.id);
     } else {
         editingEntry.value = null;
         newEntry.value = {
@@ -99,6 +129,7 @@ function openEntryModal(entry?: Entry) {
             amountExpected: '0',
             amountReceived: '0',
         };
+        selectedEntryTagIds.value = [];
     }
     showEntryModal.value = true;
 }
@@ -111,6 +142,7 @@ function openExpenseModal(expense?: Expense) {
             description: expense.description,
             amount: expense.amount,
         };
+        selectedExpenseTagIds.value = expense.tags.map(t => t.id);
     } else {
         editingExpense.value = null;
         newExpense.value = {
@@ -118,8 +150,61 @@ function openExpenseModal(expense?: Expense) {
             description: '',
             amount: '0',
         };
+        selectedExpenseTagIds.value = [];
     }
     showExpenseModal.value = true;
+}
+
+function toggleEntryTag(tagId: number) {
+    const index = selectedEntryTagIds.value.indexOf(tagId);
+    if (index === -1) {
+        selectedEntryTagIds.value.push(tagId);
+    } else {
+        selectedEntryTagIds.value.splice(index, 1);
+    }
+}
+
+function toggleExpenseTag(tagId: number) {
+    const index = selectedExpenseTagIds.value.indexOf(tagId);
+    if (index === -1) {
+        selectedExpenseTagIds.value.push(tagId);
+    } else {
+        selectedExpenseTagIds.value.splice(index, 1);
+    }
+}
+
+async function createTag() {
+    if (!newTagName.value.trim()) return;
+
+    isCreatingTag.value = true;
+    try {
+        await $fetch('/api/tags', {
+            method: 'POST',
+            body: {
+                name: newTagName.value.trim(),
+                color: newTagColor.value,
+            },
+        });
+        newTagName.value = '';
+        newTagColor.value = '#6366f1';
+        showTagModal.value = false;
+        await refreshTags();
+    } catch (error: any) {
+        alert(error.data?.message || 'Erro ao criar tag');
+    } finally {
+        isCreatingTag.value = false;
+    }
+}
+
+async function deleteTag(tagId: number) {
+    if (!confirm('Tem certeza que deseja excluir esta tag?')) return;
+    try {
+        await $fetch(`/api/tags/${tagId}`, { method: 'DELETE' });
+        await refreshTags();
+        await refresh();
+    } catch (error: any) {
+        alert(error.data?.message || 'Erro ao excluir tag');
+    }
 }
 
 async function saveEntry() {
@@ -128,12 +213,12 @@ async function saveEntry() {
         if (editingEntry.value) {
             await $fetch(`/api/entries/${editingEntry.value.id}`, {
                 method: 'PUT',
-                body: newEntry.value,
+                body: { ...newEntry.value, tagIds: selectedEntryTagIds.value },
             });
         } else {
             await $fetch('/api/entries', {
                 method: 'POST',
-                body: { ...newEntry.value, cashFlowId: Number(id) },
+                body: { ...newEntry.value, cashFlowId: Number(id), tagIds: selectedEntryTagIds.value },
             });
         }
         showEntryModal.value = false;
@@ -151,12 +236,12 @@ async function saveExpense() {
         if (editingExpense.value) {
             await $fetch(`/api/expenses/${editingExpense.value.id}`, {
                 method: 'PUT',
-                body: newExpense.value,
+                body: { ...newExpense.value, tagIds: selectedExpenseTagIds.value },
             });
         } else {
             await $fetch('/api/expenses', {
                 method: 'POST',
-                body: { ...newExpense.value, cashFlowId: Number(id) },
+                body: { ...newExpense.value, cashFlowId: Number(id), tagIds: selectedExpenseTagIds.value },
             });
         }
         showExpenseModal.value = false;
@@ -317,6 +402,7 @@ async function deleteExpense(expenseId: number) {
                             <tr>
                                 <th class="px-6 py-4 text-left font-medium text-text-secondary">Data</th>
                                 <th class="px-6 py-4 text-left font-medium text-text-secondary">Descrição</th>
+                                <th class="px-6 py-4 text-left font-medium text-text-secondary">Tags</th>
                                 <th class="px-6 py-4 text-right font-medium text-text-secondary">Previsto</th>
                                 <th class="px-6 py-4 text-right font-medium text-text-secondary">Recebido</th>
                                 <th class="px-6 py-4 w-28"></th>
@@ -326,6 +412,18 @@ async function deleteExpense(expenseId: number) {
                             <tr v-for="entry in cashFlow.entries" :key="entry.id" class="hover:bg-bg-card-hover transition-colors">
                                 <td class="px-6 py-4 text-text-secondary">{{ formatDate(entry.date) }}</td>
                                 <td class="px-6 py-4 text-text-primary">{{ entry.description }}</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-wrap gap-1">
+                                        <span
+                                            v-for="tag in entry.tags"
+                                            :key="tag.id"
+                                            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                                            :style="{ backgroundColor: tag.color }"
+                                        >
+                                            {{ tag.name }}
+                                        </span>
+                                    </div>
+                                </td>
                                 <td class="px-6 py-4 text-right text-text-secondary">{{ formatCurrency(entry.amountExpected) }}</td>
                                 <td class="px-6 py-4 text-right font-medium text-success">{{ formatCurrency(entry.amountReceived) }}</td>
                                 <td class="px-6 py-4">
@@ -380,6 +478,7 @@ async function deleteExpense(expenseId: number) {
                             <tr>
                                 <th class="px-6 py-4 text-left font-medium text-text-secondary">Data</th>
                                 <th class="px-6 py-4 text-left font-medium text-text-secondary">Descrição</th>
+                                <th class="px-6 py-4 text-left font-medium text-text-secondary">Tags</th>
                                 <th class="px-6 py-4 text-right font-medium text-text-secondary">Valor</th>
                                 <th class="px-6 py-4 w-28"></th>
                             </tr>
@@ -388,6 +487,18 @@ async function deleteExpense(expenseId: number) {
                             <tr v-for="expense in cashFlow.expenses" :key="expense.id" class="hover:bg-bg-card-hover transition-colors">
                                 <td class="px-6 py-4 text-text-secondary">{{ formatDate(expense.date) }}</td>
                                 <td class="px-6 py-4 text-text-primary">{{ expense.description }}</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-wrap gap-1">
+                                        <span
+                                            v-for="tag in expense.tags"
+                                            :key="tag.id"
+                                            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                                            :style="{ backgroundColor: tag.color }"
+                                        >
+                                            {{ tag.name }}
+                                        </span>
+                                    </div>
+                                </td>
                                 <td class="px-6 py-4 text-right font-medium text-danger">{{ formatCurrency(expense.amount) }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
@@ -427,7 +538,7 @@ async function deleteExpense(expenseId: number) {
             class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
             @click.self="showEntryModal = false"
         >
-            <div class="bg-bg-card border border-border rounded-xl p-6 w-full max-w-md">
+            <div class="bg-bg-card border border-border rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-xl font-semibold text-text-primary">
                         {{ editingEntry ? 'Editar Entrada' : 'Nova Entrada' }}
@@ -484,6 +595,41 @@ async function deleteExpense(expenseId: number) {
                         </div>
                     </div>
 
+                    <!-- Tags Selection -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium text-text-secondary">Tags</label>
+                            <button
+                                type="button"
+                                @click="showTagModal = true"
+                                class="text-xs text-accent hover:text-accent-hover transition-colors"
+                            >
+                                + Nova Tag
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 p-3 bg-bg-secondary rounded-lg min-h-[60px]">
+                            <button
+                                v-for="tag in availableTags"
+                                :key="tag.id"
+                                type="button"
+                                @click="toggleEntryTag(tag.id)"
+                                class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+                                :class="selectedEntryTagIds.includes(tag.id)
+                                    ? 'text-white ring-2 ring-white/30'
+                                    : 'text-white/70 opacity-50 hover:opacity-80'"
+                                :style="{ backgroundColor: tag.color }"
+                            >
+                                {{ tag.name }}
+                                <svg v-if="selectedEntryTagIds.includes(tag.id)" class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <span v-if="!availableTags || availableTags.length === 0" class="text-text-muted text-xs">
+                                Nenhuma tag criada
+                            </span>
+                        </div>
+                    </div>
+
                     <div class="flex gap-3 pt-4">
                         <button
                             type="button"
@@ -510,7 +656,7 @@ async function deleteExpense(expenseId: number) {
             class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
             @click.self="showExpenseModal = false"
         >
-            <div class="bg-bg-card border border-border rounded-xl p-6 w-full max-w-md">
+            <div class="bg-bg-card border border-border rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-xl font-semibold text-text-primary">
                         {{ editingExpense ? 'Editar Saída' : 'Nova Saída' }}
@@ -556,6 +702,41 @@ async function deleteExpense(expenseId: number) {
                         />
                     </div>
 
+                    <!-- Tags Selection -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium text-text-secondary">Tags</label>
+                            <button
+                                type="button"
+                                @click="showTagModal = true"
+                                class="text-xs text-accent hover:text-accent-hover transition-colors"
+                            >
+                                + Nova Tag
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 p-3 bg-bg-secondary rounded-lg min-h-[60px]">
+                            <button
+                                v-for="tag in availableTags"
+                                :key="tag.id"
+                                type="button"
+                                @click="toggleExpenseTag(tag.id)"
+                                class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+                                :class="selectedExpenseTagIds.includes(tag.id)
+                                    ? 'text-white ring-2 ring-white/30'
+                                    : 'text-white/70 opacity-50 hover:opacity-80'"
+                                :style="{ backgroundColor: tag.color }"
+                            >
+                                {{ tag.name }}
+                                <svg v-if="selectedExpenseTagIds.includes(tag.id)" class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <span v-if="!availableTags || availableTags.length === 0" class="text-text-muted text-xs">
+                                Nenhuma tag criada
+                            </span>
+                        </div>
+                    </div>
+
                     <div class="flex gap-3 pt-4">
                         <button
                             type="button"
@@ -573,6 +754,96 @@ async function deleteExpense(expenseId: number) {
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Tag Creation Modal -->
+        <div
+            v-if="showTagModal"
+            class="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4"
+            @click.self="showTagModal = false"
+        >
+            <div class="bg-bg-card border border-border rounded-xl p-6 w-full max-w-sm">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-semibold text-text-primary">Nova Tag</h2>
+                    <button
+                        @click="showTagModal = false"
+                        class="p-2 text-text-muted hover:text-text-primary hover:bg-bg-secondary rounded-lg transition-colors"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <form @submit.prevent="createTag" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-2">Nome</label>
+                        <input
+                            v-model="newTagName"
+                            type="text"
+                            required
+                            placeholder="Ex: Alimentação, Salário..."
+                            class="w-full bg-bg-input border border-border rounded-lg px-4 py-2.5 text-text-primary placeholder-text-muted focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-2">Cor</label>
+                        <div class="flex flex-wrap gap-2">
+                            <button
+                                v-for="color in tagColors"
+                                :key="color"
+                                type="button"
+                                @click="newTagColor = color"
+                                class="w-8 h-8 rounded-full transition-all"
+                                :class="newTagColor === color ? 'ring-2 ring-white ring-offset-2 ring-offset-bg-card' : 'hover:scale-110'"
+                                :style="{ backgroundColor: color }"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button
+                            type="button"
+                            @click="showTagModal = false"
+                            class="flex-1 px-4 py-2.5 border border-border rounded-lg text-text-primary hover:bg-bg-secondary transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="isCreatingTag || !newTagName.trim()"
+                            class="flex-1 px-4 py-2.5 bg-accent text-white rounded-lg font-medium hover:bg-accent-hover transition-colors disabled:opacity-50"
+                        >
+                            {{ isCreatingTag ? 'Criando...' : 'Criar' }}
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Existing Tags List -->
+                <div v-if="availableTags && availableTags.length > 0" class="mt-6 pt-6 border-t border-border">
+                    <p class="text-sm font-medium text-text-secondary mb-3">Tags existentes</p>
+                    <div class="flex flex-wrap gap-2">
+                        <div
+                            v-for="tag in availableTags"
+                            :key="tag.id"
+                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-white group"
+                            :style="{ backgroundColor: tag.color }"
+                        >
+                            {{ tag.name }}
+                            <button
+                                type="button"
+                                @click="deleteTag(tag.id)"
+                                class="opacity-0 group-hover:opacity-100 hover:text-red-200 transition-opacity"
+                            >
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

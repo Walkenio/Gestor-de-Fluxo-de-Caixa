@@ -1,14 +1,17 @@
 import { useDb } from '../../db';
-import { expenses } from '../../db/schema';
+import { expenses, expenseTags } from '../../db/schema';
 import { eq } from 'drizzle-orm';
 
 interface UpdateExpenseBody {
     date?: string;
     description?: string;
     amount?: string;
+    tagIds?: number[];
 }
 
 export default defineEventHandler(async (event) => {
+    await requireAuth(event);
+
     const db = useDb();
     const id = parseInt(getRouterParam(event, 'id') || '');
     const body = await readBody<UpdateExpenseBody>(event);
@@ -40,6 +43,22 @@ export default defineEventHandler(async (event) => {
         })
         .where(eq(expenses.id, id))
         .returning();
+
+    // Atualizar tags se fornecidas
+    if (body.tagIds !== undefined) {
+        // Remover tags antigas
+        await db.delete(expenseTags).where(eq(expenseTags.expenseId, id));
+
+        // Inserir novas tags
+        if (body.tagIds.length > 0) {
+            await db.insert(expenseTags).values(
+                body.tagIds.map((tagId) => ({
+                    expenseId: id,
+                    tagId,
+                }))
+            );
+        }
+    }
 
     return updated;
 });

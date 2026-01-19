@@ -1,5 +1,5 @@
 import { useDb } from '../../db';
-import { expenses, cashFlows } from '../../db/schema';
+import { expenses, cashFlows, expenseTags } from '../../db/schema';
 import { eq } from 'drizzle-orm';
 
 interface CreateExpenseBody {
@@ -7,9 +7,12 @@ interface CreateExpenseBody {
     date: string;
     description: string;
     amount?: string;
+    tagIds?: number[];
 }
 
 export default defineEventHandler(async (event) => {
+    await requireAuth(event);
+
     const db = useDb();
     const body = await readBody<CreateExpenseBody>(event);
 
@@ -40,6 +43,16 @@ export default defineEventHandler(async (event) => {
             amount: body.amount || '0',
         })
         .returning();
+
+    // Inserir tags se fornecidas
+    if (body.tagIds && body.tagIds.length > 0) {
+        await db.insert(expenseTags).values(
+            body.tagIds.map((tagId) => ({
+                expenseId: newExpense.id,
+                tagId,
+            }))
+        );
+    }
 
     return newExpense;
 });
