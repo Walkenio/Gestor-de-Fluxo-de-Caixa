@@ -61,7 +61,7 @@ const monthNames = [
 ];
 
 function formatMonth(month: number): string {
-    return monthNames[month - 1];
+    return monthNames[month - 1] || '';
 }
 
 function formatCurrency(value: string | number): string {
