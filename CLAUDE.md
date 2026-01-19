@@ -264,3 +264,76 @@ Após rodar `npm run db:seed`:
 - Valores monetários são `decimal(12,2)`
 - Frontend usa composable `useAuth()` para autenticação
 - Formatação de moeda: `pt-BR` com `BRL`
+
+## UI Guidelines
+
+**IMPORTANTE**: Todo desenvolvimento de interface deve seguir o arquivo `design.json` na raiz do projeto.
+
+### Design System
+
+O projeto utiliza um tema escuro (dark theme) inspirado em dashboards financeiros modernos. As especificações completas estão em `design.json`.
+
+### Cores Principais
+
+| Uso | Cor | Hex |
+|-----|-----|-----|
+| Background principal | Preto profundo | `#0a0a0f` |
+| Background secundário | Cinza escuro | `#12121a` |
+| Cards | Cinza card | `#1a1a24` |
+| Bordas | Cinza borda | `#2a2a3a` |
+| Texto principal | Branco | `#ffffff` |
+| Texto secundário | Cinza claro | `#8b8b9e` |
+| Accent/Primário | Indigo | `#6366f1` |
+| Sucesso (entradas) | Verde | `#22c55e` |
+| Perigo (saídas) | Vermelho | `#ef4444` |
+
+### Componentes
+
+#### Cards
+- Background: `#1a1a24`
+- Borda: `1px solid #2a2a3a`
+- Border-radius: `1rem`
+- Padding: `1.5rem`
+
+#### Botões
+- **Primário**: Background `#6366f1`, hover `#818cf8`
+- **Secundário**: Background transparente, borda `#2a2a3a`
+- **Perigo**: Background `#ef4444`
+- Border-radius: `0.5rem`
+
+#### Inputs
+- Background: `#12121a`
+- Borda: `1px solid #2a2a3a`
+- Focus: borda `#6366f1`
+- Border-radius: `0.5rem`
+
+#### Tabelas
+- Header background: `#12121a`
+- Row hover: `#1a1a24`
+- Borda: `#2a2a3a`
+
+### Layout
+
+- Sidebar à esquerda (280px)
+- Conteúdo principal com max-width `1400px`
+- Grid gap: `1.5rem`
+- Padding do conteúdo: `2rem`
+
+### Tipografia
+
+- Font family: Inter (sans-serif)
+- Tamanhos: xs (0.75rem), sm (0.875rem), base (1rem), lg (1.125rem), xl+ para títulos
+
+### Badges de Status
+
+- **Valores positivos**: Background `rgba(34, 197, 94, 0.1)`, texto `#22c55e`
+- **Valores negativos**: Background `rgba(239, 68, 68, 0.1)`, texto `#ef4444`
+
+### Regras de UI
+
+1. Sempre usar o tema escuro definido em `design.json`
+2. Cards devem ter hover state com `#22222e`
+3. Transições suaves (200ms) em interações
+4. Ícones com 20px para sidebar, 24px para ações
+5. Espaçamento consistente usando a escala definida
+6. Valores monetários positivos em verde, negativos em vermelho

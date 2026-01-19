@@ -71,165 +71,182 @@ function formatDate(dateStr: string): string {
 </script>
 
 <template>
-    <div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="min-h-screen bg-bg-primary">
         <!-- Header -->
-        <header class="mb-8 flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Usuários</h1>
-                <p class="mt-2 text-gray-600">
-                    Gerenciamento de usuários do sistema
-                </p>
-            </div>
-            <div class="flex items-center gap-4">
-                <span class="text-sm text-gray-600">
-                    {{ currentUser?.name }}
-                </span>
-                <NuxtLink
-                    to="/"
-                    class="text-blue-600 hover:text-blue-800 text-sm"
-                >
-                    Fluxo de Caixa
-                </NuxtLink>
-                <button
-                    @click="logout"
-                    class="text-red-600 hover:text-red-800 text-sm"
-                >
-                    Sair
-                </button>
+        <header class="border-b border-border bg-bg-secondary">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
+                        <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                        </svg>
+                    </div>
+                    <h1 class="text-xl font-semibold text-text-primary">Usuários</h1>
+                </div>
+                <div class="flex items-center gap-6">
+                    <span class="text-sm text-text-secondary">{{ currentUser?.name }}</span>
+                    <NuxtLink
+                        to="/"
+                        class="text-text-secondary hover:text-text-primary text-sm transition-colors"
+                    >
+                        Fluxo de Caixa
+                    </NuxtLink>
+                    <button
+                        @click="logout"
+                        class="text-danger hover:text-danger/80 text-sm transition-colors"
+                    >
+                        Sair
+                    </button>
+                </div>
             </div>
         </header>
 
-        <div class="mb-6">
-            <button
-                @click="showModal = true"
-                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-                + Novo Usuário
-            </button>
-        </div>
-
-        <!-- Users Table -->
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <table v-if="users && users.length > 0" class="w-full text-sm">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th
-                            class="px-4 py-3 text-left font-medium text-gray-600"
-                        >
-                            Nome
-                        </th>
-                        <th
-                            class="px-4 py-3 text-left font-medium text-gray-600"
-                        >
-                            Email
-                        </th>
-                        <th
-                            class="px-4 py-3 text-center font-medium text-gray-600"
-                        >
-                            Admin
-                        </th>
-                        <th
-                            class="px-4 py-3 text-left font-medium text-gray-600"
-                        >
-                            Criado em
-                        </th>
-                        <th class="px-4 py-3 w-24"></th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    <tr
-                        v-for="user in users"
-                        :key="user.id"
-                        class="hover:bg-gray-50"
-                    >
-                        <td class="px-4 py-3 font-medium">{{ user.name }}</td>
-                        <td class="px-4 py-3">{{ user.email }}</td>
-                        <td class="px-4 py-3 text-center">
-                            <span
-                                v-if="user.isAdmin"
-                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800"
-                            >
-                                Sim
-                            </span>
-                            <span
-                                v-else
-                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600"
-                            >
-                                Não
-                            </span>
-                        </td>
-                        <td class="px-4 py-3">
-                            {{ formatDate(user.createdAt) }}
-                        </td>
-                        <td class="px-4 py-3 text-right">
-                            <button
-                                v-if="user.id !== currentUser?.id"
-                                @click="deleteUser(user.id)"
-                                class="text-red-600 hover:text-red-800"
-                            >
-                                Excluir
-                            </button>
-                            <span v-else class="text-gray-400 text-xs">
-                                (você)
-                            </span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <div v-else class="p-8 text-center text-gray-500">
-                Nenhum usuário cadastrado
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-6 py-8">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-2xl font-bold text-text-primary">Gerenciar Usuários</h2>
+                    <p class="mt-1 text-text-secondary">
+                        Adicione e gerencie usuários do sistema
+                    </p>
+                </div>
+                <button
+                    @click="showModal = true"
+                    class="bg-accent text-white px-4 py-2.5 rounded-lg font-medium hover:bg-accent-hover transition-colors flex items-center gap-2"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Novo Usuário
+                </button>
             </div>
-        </div>
+
+            <!-- Users Table -->
+            <div class="bg-bg-card border border-border rounded-xl overflow-hidden">
+                <table v-if="users && users.length > 0" class="w-full text-sm">
+                    <thead class="bg-bg-secondary border-b border-border">
+                        <tr>
+                            <th class="px-6 py-4 text-left font-medium text-text-secondary">Nome</th>
+                            <th class="px-6 py-4 text-left font-medium text-text-secondary">Email</th>
+                            <th class="px-6 py-4 text-center font-medium text-text-secondary">Admin</th>
+                            <th class="px-6 py-4 text-left font-medium text-text-secondary">Criado em</th>
+                            <th class="px-6 py-4 w-24"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-border">
+                        <tr
+                            v-for="user in users"
+                            :key="user.id"
+                            class="hover:bg-bg-card-hover transition-colors"
+                        >
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center">
+                                        <span class="text-accent font-medium text-sm">
+                                            {{ user.name.charAt(0).toUpperCase() }}
+                                        </span>
+                                    </div>
+                                    <span class="font-medium text-text-primary">{{ user.name }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-text-secondary">{{ user.email }}</td>
+                            <td class="px-6 py-4 text-center">
+                                <span
+                                    v-if="user.isAdmin"
+                                    class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-success-bg text-success border border-success/20"
+                                >
+                                    Admin
+                                </span>
+                                <span
+                                    v-else
+                                    class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-bg-secondary text-text-muted border border-border"
+                                >
+                                    Usuário
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-text-secondary">
+                                {{ formatDate(user.createdAt) }}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <button
+                                    v-if="user.id !== currentUser?.id"
+                                    @click="deleteUser(user.id)"
+                                    class="p-2 text-text-muted hover:text-danger hover:bg-danger-bg rounded-lg transition-colors"
+                                    title="Excluir"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                                <span v-else class="text-text-muted text-xs px-2">(você)</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div v-else class="p-12 text-center">
+                    <div class="w-16 h-16 bg-bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                        </svg>
+                    </div>
+                    <p class="text-text-secondary">Nenhum usuário cadastrado</p>
+                </div>
+            </div>
+        </main>
 
         <!-- Modal -->
         <div
             v-if="showModal"
-            class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
             @click.self="showModal = false"
         >
-            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-                <h2 class="text-xl font-semibold mb-4">Novo Usuário</h2>
+            <div class="bg-bg-card border border-border rounded-xl p-6 w-full max-w-md">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-text-primary">Novo Usuário</h2>
+                    <button
+                        @click="showModal = false"
+                        class="p-2 text-text-muted hover:text-text-primary hover:bg-bg-secondary rounded-lg transition-colors"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
 
                 <div
                     v-if="errorMessage"
-                    class="mb-4 p-3 bg-red-100 text-red-700 rounded"
+                    class="mb-4 p-3 bg-danger-bg border border-danger/20 text-danger rounded-lg text-sm"
                 >
                     {{ errorMessage }}
                 </div>
 
-                <form @submit.prevent="createUser" class="space-y-4">
+                <form @submit.prevent="createUser" class="space-y-5">
                     <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-1"
-                        >
+                        <label class="block text-sm font-medium text-text-secondary mb-2">
                             Nome
                         </label>
                         <input
                             v-model="newUser.name"
                             type="text"
                             required
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            class="w-full bg-bg-input border border-border rounded-lg px-4 py-2.5 text-text-primary placeholder-text-muted focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                         />
                     </div>
 
                     <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-1"
-                        >
+                        <label class="block text-sm font-medium text-text-secondary mb-2">
                             Email
                         </label>
                         <input
                             v-model="newUser.email"
                             type="email"
                             required
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            class="w-full bg-bg-input border border-border rounded-lg px-4 py-2.5 text-text-primary placeholder-text-muted focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                         />
                     </div>
 
                     <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-1"
-                        >
+                        <label class="block text-sm font-medium text-text-secondary mb-2">
                             Senha
                         </label>
                         <input
@@ -237,22 +254,22 @@ function formatDate(dateStr: string): string {
                             type="password"
                             required
                             minlength="6"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            class="w-full bg-bg-input border border-border rounded-lg px-4 py-2.5 text-text-primary placeholder-text-muted focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                         />
-                        <p class="text-xs text-gray-500 mt-1">
+                        <p class="text-xs text-text-muted mt-1.5">
                             Mínimo de 6 caracteres
                         </p>
                     </div>
 
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-3 p-3 bg-bg-secondary rounded-lg">
                         <input
                             id="isAdmin"
                             v-model="newUser.isAdmin"
                             type="checkbox"
-                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            class="w-4 h-4 rounded border-border bg-bg-input text-accent focus:ring-accent focus:ring-offset-0"
                         />
-                        <label for="isAdmin" class="text-sm text-gray-700">
-                            Administrador
+                        <label for="isAdmin" class="text-sm text-text-primary">
+                            Conceder privilégios de administrador
                         </label>
                     </div>
 
@@ -260,14 +277,14 @@ function formatDate(dateStr: string): string {
                         <button
                             type="button"
                             @click="showModal = false"
-                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                            class="flex-1 px-4 py-2.5 border border-border rounded-lg text-text-primary hover:bg-bg-secondary transition-colors"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             :disabled="isSubmitting"
-                            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                            class="flex-1 px-4 py-2.5 bg-accent text-white rounded-lg font-medium hover:bg-accent-hover transition-colors disabled:opacity-50"
                         >
                             {{ isSubmitting ? 'Criando...' : 'Criar' }}
                         </button>
