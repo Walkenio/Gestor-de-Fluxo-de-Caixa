@@ -1,10 +1,10 @@
 import { useDb } from '../../db';
 import { users } from '../../db/schema';
 import { desc } from 'drizzle-orm';
-import { requireAuth } from '../../utils/session';
+import { requireAdmin } from '../../utils/session';
 
 export default defineEventHandler(async (event) => {
-    requireAuth(event);
+    requireAdmin(event);
 
     const db = useDb();
     const result = await db

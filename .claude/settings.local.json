@@ -19,7 +19,7 @@
       "NotebookRead",
       "NotebookEdit",
       "Task",
-      "exit_plan_mode",
+      "Exit_plan_mode",
       "mcp__*"
     ],
     "deny": []

@@ -2,7 +2,7 @@ import { useDb } from '../../db';
 import { users } from '../../db/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcrypt';
-import { requireAuth } from '../../utils/session';
+import { requireAdmin } from '../../utils/session';
 
 interface CreateUserBody {
     name: string;
@@ -12,7 +12,7 @@ interface CreateUserBody {
 }
 
 export default defineEventHandler(async (event) => {
-    requireAuth(event);
+    requireAdmin(event);
 
     const body = await readBody<CreateUserBody>(event);
 

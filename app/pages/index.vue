@@ -101,6 +101,7 @@ async function deleteCashFlow(id: number) {
             <div class="flex items-center gap-4">
                 <span class="text-sm text-gray-600">{{ user?.name }}</span>
                 <NuxtLink
+                    v-if="user?.isAdmin"
                     to="/users"
                     class="text-blue-600 hover:text-blue-800 text-sm"
                 >

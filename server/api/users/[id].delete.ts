@@ -1,10 +1,10 @@
 import { useDb } from '../../db';
 import { users } from '../../db/schema';
 import { eq } from 'drizzle-orm';
-import { requireAuth } from '../../utils/session';
+import { requireAdmin } from '../../utils/session';
 
 export default defineEventHandler(async (event) => {
-    const session = requireAuth(event);
+    const session = requireAdmin(event);
     const id = parseInt(getRouterParam(event, 'id') || '');
 
     if (isNaN(id)) {

@@ -1,4 +1,11 @@
 <script setup lang="ts">
+const { user: currentUser, logout } = useAuth();
+
+// Proteger página - apenas admins
+if (!currentUser.value?.isAdmin) {
+    await navigateTo('/');
+}
+
 interface User {
     id: number;
     name: string;
@@ -7,7 +14,6 @@ interface User {
     createdAt: string;
 }
 
-const { user: currentUser, logout } = useAuth();
 const { data: users, refresh } = await useFetch<User[]>('/api/users');
 
 const showModal = ref(false);
