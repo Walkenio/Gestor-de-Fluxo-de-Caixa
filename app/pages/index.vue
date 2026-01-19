@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { user, logout } = useAuth();
+
 interface CashFlow {
     id: number;
     month: number;
@@ -89,11 +91,28 @@ async function deleteCashFlow(id: number) {
 
 <template>
     <div class="max-w-6xl mx-auto px-4 py-8">
-        <header class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Fluxo de Caixa</h1>
-            <p class="mt-2 text-gray-600">
-                Controle financeiro mensal de entradas e saídas
-            </p>
+        <header class="mb-8 flex justify-between items-start">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Fluxo de Caixa</h1>
+                <p class="mt-2 text-gray-600">
+                    Controle financeiro mensal de entradas e saídas
+                </p>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-600">{{ user?.name }}</span>
+                <NuxtLink
+                    to="/users"
+                    class="text-blue-600 hover:text-blue-800 text-sm"
+                >
+                    Usuários
+                </NuxtLink>
+                <button
+                    @click="logout"
+                    class="text-red-600 hover:text-red-800 text-sm"
+                >
+                    Sair
+                </button>
+            </div>
         </header>
 
         <div class="mb-6">

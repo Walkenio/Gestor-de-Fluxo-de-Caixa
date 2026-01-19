@@ -12,5 +12,7 @@ export default defineNuxtConfig({
     css: ['./app/assets/css/main.css'],
     runtimeConfig: {
         databaseUrl: process.env.DATABASE_URL,
+        sessionSecret:
+            process.env.SESSION_SECRET || 'sua-chave-secreta-aqui-mude-em-producao',
     },
 });

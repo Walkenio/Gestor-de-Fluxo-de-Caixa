@@ -7,8 +7,22 @@ import {
     date,
     timestamp,
     unique,
+    boolean,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+
+// Tabela de Usuários
+export const users = pgTable('users', {
+    id: serial('id').primaryKey(),
+    name: varchar('name', { length: 255 }).notNull(),
+    email: varchar('email', { length: 255 }).notNull().unique(),
+    password: varchar('password', { length: 255 }).notNull(),
+    isAdmin: boolean('is_admin').default(false).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
 
 export const cashFlows = pgTable(
     'cash_flows',

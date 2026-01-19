@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { user, logout } = useAuth();
+
 interface Entry {
     id: number;
     cashFlowId: number;
