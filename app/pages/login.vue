@@ -10,6 +10,9 @@ const password = ref('');
 const errorMessage = ref('');
 const isLoading = ref(false);
 
+const config = useRuntimeConfig();
+const isProduction = config.isProduction as boolean;
+
 async function handleLogin() {
     if (!email.value || !password.value) {
         errorMessage.value = 'Preencha todos os campos';
@@ -28,24 +31,32 @@ async function handleLogin() {
         isLoading.value = false;
     }
 }
+
+const autofillUsers = computed(() => {
+    if (isProduction) {
+        return [];
+    }
+
+    return [
+        {
+            email: 'admin@admin.com',
+            password: 'admin123',
+        },
+        {
+            email: 'staff@mail.com',
+            password: 'pass123',
+        },
+    ];
+});
 </script>
 
 <template>
-    <div
-        class="min-h-screen bg-bg-primary flex items-center justify-center px-4"
-    >
+    <div class="min-h-screen bg-bg-primary flex flex-col items-center justify-center px-4">
         <div class="w-full max-w-md">
             <div class="bg-bg-card border border-border rounded-xl p-8">
                 <div class="text-center mb-8">
-                    <div
-                        class="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4"
-                    >
-                        <svg
-                            class="w-6 h-6 text-accent"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
+                    <div class="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
@@ -54,12 +65,8 @@ async function handleLogin() {
                             />
                         </svg>
                     </div>
-                    <h1 class="text-2xl font-bold text-text-primary">
-                        Fluxo de Caixa
-                    </h1>
-                    <p class="text-text-secondary mt-2">
-                        Entre com suas credenciais
-                    </p>
+                    <h1 class="text-2xl font-bold text-text-primary">Fluxo de Caixa</h1>
+                    <p class="text-text-secondary mt-2">Entre com suas credenciais</p>
                 </div>
 
                 <div
@@ -71,12 +78,7 @@ async function handleLogin() {
 
                 <form @submit.prevent="handleLogin" class="space-y-5">
                     <div>
-                        <label
-                            for="email"
-                            class="block text-sm font-medium text-text-secondary mb-2"
-                        >
-                            Email
-                        </label>
+                        <label for="email" class="block text-sm font-medium text-text-secondary mb-2">Email</label>
                         <input
                             id="email"
                             v-model="email"
@@ -89,12 +91,7 @@ async function handleLogin() {
                     </div>
 
                     <div>
-                        <label
-                            for="password"
-                            class="block text-sm font-medium text-text-secondary mb-2"
-                        >
-                            Senha
-                        </label>
+                        <label for="password" class="block text-sm font-medium text-text-secondary mb-2">Senha</label>
                         <input
                             id="password"
                             v-model="password"
@@ -114,6 +111,26 @@ async function handleLogin() {
                         {{ isLoading ? 'Entrando...' : 'Entrar' }}
                     </button>
                 </form>
+            </div>
+        </div>
+
+        <div v-if="autofillUsers?.length" class="w-full max-w-md">
+            <div class="mt-6 bg-bg-card border border-border rounded-xl p-6">
+                <h2 class="text-lg font-semibold text-text-primary mb-4">Usuários de Teste</h2>
+                <div class="space-y-4">
+                    <div
+                        v-for="(user, index) in autofillUsers"
+                        :key="index"
+                        class="p-4 bg-bg-input border border-border rounded-lg cursor-pointer hover:bg-bg-input-hover transition-colors"
+                        @click="
+                            email = user.email;
+                            password = user.password;
+                        "
+                    >
+                        <p class="text-text-primary"><strong>Email:</strong> {{ user.email }}</p>
+                        <p class="text-text-primary"><strong>Senha:</strong> {{ user.password }}</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

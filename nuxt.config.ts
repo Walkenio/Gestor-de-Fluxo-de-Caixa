@@ -12,6 +12,8 @@ export default defineNuxtConfig({
     css: ['./app/assets/css/main.css'],
     runtimeConfig: {
         databaseUrl: process.env.DATABASE_URL,
+        appEnv: process.env.APP_ENV || 'development',
+        isProduction: process.env.APP_ENV === 'production',
         sessionSecret:
             process.env.SESSION_SECRET || 'sua-chave-secreta-aqui-mude-em-producao',
     },

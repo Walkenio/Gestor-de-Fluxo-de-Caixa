@@ -25,8 +25,7 @@ useHead({
 });
 
 const title = 'Fluxo de Caixa - Controle Financeiro Mensal';
-const description =
-    'Sistema de controle de fluxo de caixa mensal com registro de entradas e saídas.';
+const description = 'Sistema de controle de fluxo de caixa mensal com registro de entradas e saídas.';
 
 useSeoMeta({
     title,
@@ -37,7 +36,8 @@ useSeoMeta({
 </script>
 
 <template>
-    <div class="min-h-screen bg-bg-primary text-text-primary antialiased">
+    <!-- <div class="min-h-screen bg-bg-primary text-text-primary antialiased"> -->
+    <!-- <NuxtLayout name="default"> -->
         <NuxtPage />
-    </div>
+    <!-- </NuxtLayout> -->
 </template>

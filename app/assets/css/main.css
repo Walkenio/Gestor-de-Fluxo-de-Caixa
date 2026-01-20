@@ -80,3 +80,7 @@ body {
     background-color: var(--color-accent);
     color: white;
 }
+
+button:not([disabled]) {
+    cursor: pointer;
+}

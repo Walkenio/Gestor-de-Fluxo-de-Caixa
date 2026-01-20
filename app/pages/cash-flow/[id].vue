@@ -46,18 +46,24 @@ interface CashFlowDetail {
 const route = useRoute();
 const id = route.params.id;
 
-const {
-    data: cashFlow,
-    refresh,
-    error,
-} = await useFetch<CashFlowDetail>(`/api/cash-flows/${id}`);
+const { data: cashFlow, refresh, error } = await useFetch<CashFlowDetail>(`/api/cash-flows/${id}`);
 
 // Buscar todas as tags disponíveis
 const { data: availableTags, refresh: refreshTags } = await useFetch<Tag[]>('/api/tags');
 
 const monthNames = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
 ];
 
 function formatMonth(month: number): string {
@@ -111,6 +117,10 @@ const tagColors = [
     '#14b8a6', // teal
 ];
 
+onBeforeMount(() => {
+    newTagColor.value = tagColors[Math.floor(Math.random() * tagColors.length)] || '#6366f1';
+});
+
 function openEntryModal(entry?: Entry) {
     if (entry) {
         editingEntry.value = entry;
@@ -120,7 +130,7 @@ function openEntryModal(entry?: Entry) {
             amountExpected: entry.amountExpected,
             amountReceived: entry.amountReceived,
         };
-        selectedEntryTagIds.value = entry.tags.map(t => t.id);
+        selectedEntryTagIds.value = entry.tags.map((t) => t.id);
     } else {
         editingEntry.value = null;
         newEntry.value = {
@@ -142,7 +152,7 @@ function openExpenseModal(expense?: Expense) {
             description: expense.description,
             amount: expense.amount,
         };
-        selectedExpenseTagIds.value = expense.tags.map(t => t.id);
+        selectedExpenseTagIds.value = expense.tags.map((t) => t.id);
     } else {
         editingExpense.value = null;
         newExpense.value = {
@@ -275,43 +285,8 @@ async function deleteExpense(expenseId: number) {
 </script>
 
 <template>
-    <div class="min-h-screen bg-bg-primary">
-        <!-- Header -->
-        <header class="border-b border-border bg-bg-secondary">
-            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                <div class="flex items-center gap-4">
-                    <NuxtLink
-                        to="/"
-                        class="p-2 text-text-muted hover:text-text-primary hover:bg-bg-card rounded-lg transition-colors"
-                    >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                    </NuxtLink>
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
-                            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-                        <div v-if="cashFlow">
-                            <h1 class="text-xl font-semibold text-text-primary">
-                                {{ formatMonth(cashFlow.month) }} {{ cashFlow.year }}
-                            </h1>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-center gap-6">
-                    <span class="text-sm text-text-secondary">{{ user?.name }}</span>
-                    <button
-                        @click="logout"
-                        class="text-danger hover:text-danger/80 text-sm transition-colors"
-                    >
-                        Sair
-                    </button>
-                </div>
-            </div>
-        </header>
+    <NuxtLayout name="default">
+        <AdminBreadcrumb />
 
         <!-- Error State -->
         <div v-if="error" class="max-w-7xl mx-auto px-6 py-8">
@@ -321,14 +296,19 @@ async function deleteExpense(expenseId: number) {
         </div>
 
         <!-- Main Content -->
-        <main v-else-if="cashFlow" class="max-w-7xl mx-auto px-6 py-8">
+        <div v-else-if="cashFlow" class=" px-6 py-8">
             <!-- Summary Cards -->
             <div class="grid gap-6 md:grid-cols-4 mb-8">
                 <div class="bg-bg-card border border-border rounded-xl p-5">
                     <div class="flex items-center gap-3 mb-3">
                         <div class="w-10 h-10 bg-text-muted/10 rounded-lg flex items-center justify-center">
                             <svg class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                                />
                             </svg>
                         </div>
                         <p class="text-sm text-text-secondary">Saldo Inicial</p>
@@ -342,7 +322,12 @@ async function deleteExpense(expenseId: number) {
                     <div class="flex items-center gap-3 mb-3">
                         <div class="w-10 h-10 bg-success-bg rounded-lg flex items-center justify-center">
                             <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M7 11l5-5m0 0l5 5m-5-5v12"
+                                />
                             </svg>
                         </div>
                         <p class="text-sm text-text-secondary">Total Entradas</p>
@@ -356,7 +341,12 @@ async function deleteExpense(expenseId: number) {
                     <div class="flex items-center gap-3 mb-3">
                         <div class="w-10 h-10 bg-danger-bg rounded-lg flex items-center justify-center">
                             <svg class="w-5 h-5 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M17 13l-5 5m0 0l-5-5m5 5V6"
+                                />
                             </svg>
                         </div>
                         <p class="text-sm text-text-secondary">Total Saídas</p>
@@ -370,7 +360,12 @@ async function deleteExpense(expenseId: number) {
                     <div class="flex items-center gap-3 mb-3">
                         <div class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
                             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
                             </svg>
                         </div>
                         <p class="text-sm text-white/80">Saldo Final</p>
@@ -409,7 +404,11 @@ async function deleteExpense(expenseId: number) {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border">
-                            <tr v-for="entry in cashFlow.entries" :key="entry.id" class="hover:bg-bg-card-hover transition-colors">
+                            <tr
+                                v-for="entry in cashFlow.entries"
+                                :key="entry.id"
+                                class="hover:bg-bg-card-hover transition-colors"
+                            >
                                 <td class="px-6 py-4 text-text-secondary">{{ formatDate(entry.date) }}</td>
                                 <td class="px-6 py-4 text-text-primary">{{ entry.description }}</td>
                                 <td class="px-6 py-4">
@@ -424,8 +423,12 @@ async function deleteExpense(expenseId: number) {
                                         </span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-right text-text-secondary">{{ formatCurrency(entry.amountExpected) }}</td>
-                                <td class="px-6 py-4 text-right font-medium text-success">{{ formatCurrency(entry.amountReceived) }}</td>
+                                <td class="px-6 py-4 text-right text-text-secondary">
+                                    {{ formatCurrency(entry.amountExpected) }}
+                                </td>
+                                <td class="px-6 py-4 text-right font-medium text-success">
+                                    {{ formatCurrency(entry.amountReceived) }}
+                                </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
                                         <button
@@ -434,7 +437,12 @@ async function deleteExpense(expenseId: number) {
                                             title="Editar"
                                         >
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                />
                                             </svg>
                                         </button>
                                         <button
@@ -443,7 +451,12 @@ async function deleteExpense(expenseId: number) {
                                             title="Excluir"
                                         >
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                />
                                             </svg>
                                         </button>
                                     </div>
@@ -484,7 +497,11 @@ async function deleteExpense(expenseId: number) {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border">
-                            <tr v-for="expense in cashFlow.expenses" :key="expense.id" class="hover:bg-bg-card-hover transition-colors">
+                            <tr
+                                v-for="expense in cashFlow.expenses"
+                                :key="expense.id"
+                                class="hover:bg-bg-card-hover transition-colors"
+                            >
                                 <td class="px-6 py-4 text-text-secondary">{{ formatDate(expense.date) }}</td>
                                 <td class="px-6 py-4 text-text-primary">{{ expense.description }}</td>
                                 <td class="px-6 py-4">
@@ -499,7 +516,9 @@ async function deleteExpense(expenseId: number) {
                                         </span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-right font-medium text-danger">{{ formatCurrency(expense.amount) }}</td>
+                                <td class="px-6 py-4 text-right font-medium text-danger">
+                                    {{ formatCurrency(expense.amount) }}
+                                </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
                                         <button
@@ -508,7 +527,12 @@ async function deleteExpense(expenseId: number) {
                                             title="Editar"
                                         >
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                />
                                             </svg>
                                         </button>
                                         <button
@@ -517,7 +541,12 @@ async function deleteExpense(expenseId: number) {
                                             title="Excluir"
                                         >
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                />
                                             </svg>
                                         </button>
                                     </div>
@@ -530,7 +559,7 @@ async function deleteExpense(expenseId: number) {
                     </div>
                 </div>
             </section>
-        </main>
+        </div>
 
         <!-- Entry Modal -->
         <div
@@ -548,7 +577,12 @@ async function deleteExpense(expenseId: number) {
                         class="p-2 text-text-muted hover:text-text-primary hover:bg-bg-secondary rounded-lg transition-colors"
                     >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"
+                            />
                         </svg>
                     </button>
                 </div>
@@ -614,14 +648,25 @@ async function deleteExpense(expenseId: number) {
                                 type="button"
                                 @click="toggleEntryTag(tag.id)"
                                 class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all"
-                                :class="selectedEntryTagIds.includes(tag.id)
-                                    ? 'text-white ring-2 ring-white/30'
-                                    : 'text-white/70 opacity-50 hover:opacity-80'"
+                                :class="
+                                    selectedEntryTagIds.includes(tag.id)
+                                        ? 'text-white ring-2 ring-white/30'
+                                        : 'text-white/70 opacity-50 hover:opacity-80'
+                                "
                                 :style="{ backgroundColor: tag.color }"
                             >
                                 {{ tag.name }}
-                                <svg v-if="selectedEntryTagIds.includes(tag.id)" class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                <svg
+                                    v-if="selectedEntryTagIds.includes(tag.id)"
+                                    class="w-3 h-3 ml-1"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"
+                                    />
                                 </svg>
                             </button>
                             <span v-if="!availableTags || availableTags.length === 0" class="text-text-muted text-xs">
@@ -666,7 +711,12 @@ async function deleteExpense(expenseId: number) {
                         class="p-2 text-text-muted hover:text-text-primary hover:bg-bg-secondary rounded-lg transition-colors"
                     >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"
+                            />
                         </svg>
                     </button>
                 </div>
@@ -721,14 +771,25 @@ async function deleteExpense(expenseId: number) {
                                 type="button"
                                 @click="toggleExpenseTag(tag.id)"
                                 class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all"
-                                :class="selectedExpenseTagIds.includes(tag.id)
-                                    ? 'text-white ring-2 ring-white/30'
-                                    : 'text-white/70 opacity-50 hover:opacity-80'"
+                                :class="
+                                    selectedExpenseTagIds.includes(tag.id)
+                                        ? 'text-white ring-2 ring-white/30'
+                                        : 'text-white/70 opacity-50 hover:opacity-80'
+                                "
                                 :style="{ backgroundColor: tag.color }"
                             >
                                 {{ tag.name }}
-                                <svg v-if="selectedExpenseTagIds.includes(tag.id)" class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                <svg
+                                    v-if="selectedExpenseTagIds.includes(tag.id)"
+                                    class="w-3 h-3 ml-1"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"
+                                    />
                                 </svg>
                             </button>
                             <span v-if="!availableTags || availableTags.length === 0" class="text-text-muted text-xs">
@@ -760,7 +821,7 @@ async function deleteExpense(expenseId: number) {
         <!-- Tag Creation Modal -->
         <div
             v-if="showTagModal"
-            class="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4"
+            class="fixed inset-0 bg-black/70 flex items-center justify-center z-60 p-4"
             @click.self="showTagModal = false"
         >
             <div class="bg-bg-card border border-border rounded-xl p-6 w-full max-w-sm">
@@ -771,7 +832,12 @@ async function deleteExpense(expenseId: number) {
                         class="p-2 text-text-muted hover:text-text-primary hover:bg-bg-secondary rounded-lg transition-colors"
                     >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"
+                            />
                         </svg>
                     </button>
                 </div>
@@ -797,7 +863,11 @@ async function deleteExpense(expenseId: number) {
                                 type="button"
                                 @click="newTagColor = color"
                                 class="w-8 h-8 rounded-full transition-all"
-                                :class="newTagColor === color ? 'ring-2 ring-white ring-offset-2 ring-offset-bg-card' : 'hover:scale-110'"
+                                :class="
+                                    newTagColor === color
+                                        ? 'ring-2 ring-white ring-offset-2 ring-offset-bg-card'
+                                        : 'hover:scale-110'
+                                "
                                 :style="{ backgroundColor: color }"
                             />
                         </div>
@@ -838,7 +908,12 @@ async function deleteExpense(expenseId: number) {
                                 class="opacity-0 group-hover:opacity-100 hover:text-red-200 transition-opacity"
                             >
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
                                 </svg>
                             </button>
                         </div>
@@ -846,5 +921,5 @@ async function deleteExpense(expenseId: number) {
                 </div>
             </div>
         </div>
-    </div>
+    </NuxtLayout>
 </template>
